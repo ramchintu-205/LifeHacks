@@ -1,9 +1,7 @@
-package com.uk.ac.tees.mad.habitloop.presentation.auth.create_account
+package com.arjun.lifehacks.presentation.auth.create_account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.arjun.lifehacks.presentation.auth.create_account.CreateAccountAction
-import com.arjun.lifehacks.presentation.auth.create_account.CreateAccountEvent
 import com.uk.ac.tees.mad.habitloop.domain.AuthRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

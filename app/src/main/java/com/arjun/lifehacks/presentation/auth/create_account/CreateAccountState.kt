@@ -1,4 +1,4 @@
-package com.uk.ac.tees.mad.habitloop.presentation.auth.create_account
+package com.arjun.lifehacks.presentation.auth.create_account
 
 data class CreateAccountState(
     val name: String = "",
