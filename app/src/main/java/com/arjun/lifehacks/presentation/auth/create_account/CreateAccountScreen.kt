@@ -232,7 +232,7 @@ fun CreateAccountScreen(
 @Preview(showBackground = true)
 @Composable
 private fun Preview() {
-    HabitLoopTheme {
+    LifeHacksTheme() {
         CreateAccountScreen(
             state = CreateAccountState(),
             onAction = {}
