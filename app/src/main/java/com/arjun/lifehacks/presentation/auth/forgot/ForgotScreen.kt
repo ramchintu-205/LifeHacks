@@ -1,4 +1,4 @@
-package com.uk.ac.tees.mad.habitloop.presentation.auth.forgot
+package com.arjun.lifehacks.presentation.auth.forgot
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -31,12 +31,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.arjun.lifehacks.presentation.auth.forgot.ForgotEvent
-import com.arjun.lifehacks.presentation.auth.forgot.ForgotState
-import com.arjun.lifehacks.presentation.auth.forgot.ForgotViewModel
 import com.arjun.lifehacks.ui.theme.LifeHacksTheme
-import com.uk.ac.tees.mad.habitloop.domain.util.ObserveAsEvents
-import com.uk.ac.tees.mad.habitloop.ui.theme.HabitLoopTheme
+import com.uk.ac.tees.mad.lifehacks.domain.util.ObserveAsEvents
+import com.uk.ac.tees.mad.lifehacks.presentation.auth.forgot.ForgotAction
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 

@@ -1,4 +1,4 @@
-package com.uk.ac.tees.mad.habitloop.presentation.auth.create_account
+package com.uk.ac.tees.mad.lifehacks.presentation.auth.create_account
 
 sealed class CreateAccountEvent {
     data object Success: CreateAccountEvent()

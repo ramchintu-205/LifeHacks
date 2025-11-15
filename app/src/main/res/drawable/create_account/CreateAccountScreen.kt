@@ -1,4 +1,4 @@
-package com.uk.ac.tees.mad.habitloop.presentation.auth.create_account
+package com.uk.ac.tees.mad.lifehacks.presentation.auth.create_account
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -31,9 +31,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.uk.ac.tees.mad.habitloop.R
-import com.uk.ac.tees.mad.habitloop.domain.util.ObserveAsEvents
-import com.uk.ac.tees.mad.habitloop.ui.theme.HabitLoopTheme
+import com.uk.ac.tees.mad.lifehacks.R
+import com.uk.ac.tees.mad.lifehacks.domain.util.ObserveAsEvents
+import com.uk.ac.tees.mad.lifehacks.ui.theme.lifehacksTheme
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -86,19 +86,19 @@ fun CreateAccountScreen(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.habitloop_logo1), // Placeholder
-                contentDescription = "HabitLoop Logo",
+                painter = painterResource(id = R.drawable.lifehacks_logo1), // Placeholder
+                contentDescription = "lifehacks Logo",
                 modifier = Modifier.size(60.dp)
             )
             Image(
-                painter = painterResource(id = R.drawable.habitloop_logo), // Placeholder
-                contentDescription = "HabitLoop Logo",
+                painter = painterResource(id = R.drawable.lifehacks_logo), // Placeholder
+                contentDescription = "lifehacks Logo",
                 modifier = Modifier.size(60.dp)
             )
         }
         Spacer(modifier = Modifier.height(5.dp))
         Text(
-            text = "HabitLoop",
+            text = "lifehacks",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF5DB09B)
@@ -233,7 +233,7 @@ fun CreateAccountScreen(
 @Preview(showBackground = true)
 @Composable
 private fun Preview() {
-    HabitLoopTheme {
+    lifehacksTheme {
         CreateAccountScreen(
             state = CreateAccountState(),
             onAction = {}

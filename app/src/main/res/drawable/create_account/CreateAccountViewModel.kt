@@ -1,8 +1,8 @@
-package com.uk.ac.tees.mad.habitloop.presentation.auth.create_account
+package com.uk.ac.tees.mad.lifehacks.presentation.auth.create_account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.uk.ac.tees.mad.habitloop.domain.AuthRepository
+import com.uk.ac.tees.mad.lifehacks.domain.AuthRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
