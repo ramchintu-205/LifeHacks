@@ -1,12 +1,13 @@
-package com.uk.ac.tees.mad.habitloop.data
+package com.arjun.lifehacks.data
 
+import com.arjun.lifehacks.domain.AuthRepository
+import com.arjun.lifehacks.domain.util.DataError
+import com.arjun.lifehacks.domain.util.EmptyResult
+import com.arjun.lifehacks.domain.util.firebaseResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.uk.ac.tees.mad.habitloop.domain.AuthRepository
 import kotlinx.coroutines.tasks.await
-import uk.ac.tees.mad.bookly.domain.util.DataError
-import uk.ac.tees.mad.bookly.domain.util.EmptyResult
-import uk.ac.tees.mad.bookly.domain.util.firebaseResult
+import kotlin.to
 
 class AuthRepositoryImpl(
     private val firebaseAuth: FirebaseAuth,
@@ -32,11 +33,11 @@ class AuthRepositoryImpl(
 
           val user = result.user
 
-            requireNotNull(user){
+            requireNotNull(user) {
                 "firebase user was null after successful registration"
             }
 
-            val userProfileData =mapOf(
+            val userProfileData = mapOf(
                 "name" to name,
                 "email" to email,
                 "uid" to user.uid,

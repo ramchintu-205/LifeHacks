@@ -1,7 +1,7 @@
-package com.uk.ac.tees.mad.habitloop.domain
+package com.arjun.lifehacks.domain
 
-import uk.ac.tees.mad.bookly.domain.util.DataError
-import uk.ac.tees.mad.bookly.domain.util.EmptyResult
+import com.arjun.lifehacks.domain.util.DataError
+import com.arjun.lifehacks.domain.util.EmptyResult
 
 interface AuthRepository {
 

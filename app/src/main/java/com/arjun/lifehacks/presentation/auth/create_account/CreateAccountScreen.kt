@@ -33,9 +33,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arjun.lifehacks.domain.util.ObserveAsEvents
 import com.arjun.lifehacks.ui.theme.LifeHacksTheme
-import com.uk.ac.tees.mad.lifehacks.ui.theme.lifehacksTheme
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import com.arjun.lifehacks.R
 
 @Composable
 fun CreateAccountRoot(

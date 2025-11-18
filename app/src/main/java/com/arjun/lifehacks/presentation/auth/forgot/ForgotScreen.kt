@@ -31,11 +31,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.arjun.lifehacks.domain.util.ObserveAsEvents
 import com.arjun.lifehacks.ui.theme.LifeHacksTheme
-import com.uk.ac.tees.mad.lifehacks.domain.util.ObserveAsEvents
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.forgot.ForgotAction
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import com.arjun.lifehacks.R
 
 @Composable
 fun ForgotRoot(

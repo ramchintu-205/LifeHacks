@@ -2,7 +2,9 @@ package com.arjun.lifehacks.presentation.auth.create_account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.uk.ac.tees.mad.lifehacks.domain.AuthRepository
+import com.arjun.lifehacks.domain.AuthRepository
+import com.arjun.lifehacks.domain.util.onFailure
+import com.arjun.lifehacks.domain.util.onSuccess
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

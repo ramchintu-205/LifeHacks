@@ -26,13 +26,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.uk.ac.tees.mad.lifehacks.domain.util.BiometricAuthStatus
-import com.uk.ac.tees.mad.lifehacks.domain.util.BiometricAuthenticator
-import com.uk.ac.tees.mad.lifehacks.ui.theme.lifehacksTheme
+import com.arjun.lifehacks.domain.util.BiometricAuthStatus
+import com.arjun.lifehacks.domain.util.BiometricAuthenticator
+import com.arjun.lifehacks.ui.theme.LifeHacksTheme
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-
+import com.arjun.lifehacks.R
 @Composable
 fun LoginRoot(
     viewModel: LoginViewModel = koinViewModel(),
@@ -225,7 +225,7 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 private fun Preview() {
-    lifehacksTheme {
+    LifeHacksTheme() {
         LoginScreen(
             state = LoginState(),
             onAction = {}
