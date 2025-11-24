@@ -9,13 +9,13 @@ plugins {
 }
 
 android {
-    namespace = "com.arjun.lifehacks"
+    namespace = "com.uk.ac.tees.mad.lifehacks"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.arjun.lifehacks"
+        applicationId = "com.uk.ac.tees.mad.lifehacks"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -54,6 +54,10 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.coil.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -85,9 +89,6 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.logging)
-
-    // Coil
-    implementation(libs.coil.compose)
 
     // koin
     implementation(platform(libs.koin.bom))

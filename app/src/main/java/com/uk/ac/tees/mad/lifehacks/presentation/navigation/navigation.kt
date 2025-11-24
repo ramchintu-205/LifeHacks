@@ -5,16 +5,25 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.google.firebase.auth.FirebaseAuth
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.create_account.CreateAccountRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.forgot.ForgotRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.login.LoginRoot
+import com.uk.ac.tees.mad.lifehacks.presentation.home.HomeRoot
+import com.uk.ac.tees.mad.lifehacks.presentation.splash.SplashRoot
 
 @Composable
 fun Navigation(navcontroller: NavHostController){
-    val startDestination = if (FirebaseAuth.getInstance().currentUser != null) GraphRoutes.Home else GraphRoutes.Login
+    NavHost(navController = navcontroller, startDestination = GraphRoutes.Splash){
 
-    NavHost(navController = navcontroller, startDestination = startDestination){
+        composable<GraphRoutes.Splash>{
+            SplashRoot(onNavigation = {
+                navcontroller.navigate(it) {
+                    popUpTo(GraphRoutes.Splash) {
+                        inclusive = true
+                    }
+                }
+            })
+        }
 
         composable<GraphRoutes.Login>{
          LoginRoot(
@@ -63,7 +72,9 @@ fun Navigation(navcontroller: NavHostController){
 
 
 
-        composable<GraphRoutes.Home> { Text(text = "Home Screen") }
+        composable<GraphRoutes.Home> { HomeRoot() }
+        composable<GraphRoutes.Favourites> { Text(text = "Favourites Screen") }
+        composable<GraphRoutes.Settings> { Text(text = "Settings Screen") }
 
 
     }

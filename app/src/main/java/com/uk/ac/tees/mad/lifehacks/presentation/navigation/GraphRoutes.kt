@@ -3,6 +3,9 @@ package com.uk.ac.tees.mad.lifehacks.presentation.navigation
 import kotlinx.serialization.Serializable
 sealed class GraphRoutes {
     @Serializable
+    data object Splash : GraphRoutes()
+
+    @Serializable
     data object Login : GraphRoutes()
     @Serializable
     data object Register : GraphRoutes()
@@ -11,4 +14,10 @@ sealed class GraphRoutes {
 
     @Serializable
     data object Home: GraphRoutes()
+
+    @Serializable
+    data object Favourites: GraphRoutes()
+
+    @Serializable
+    data object Settings: GraphRoutes()
 }

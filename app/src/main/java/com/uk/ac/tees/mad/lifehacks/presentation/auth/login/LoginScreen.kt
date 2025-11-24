@@ -29,7 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import com.arjun.lifehacks.R
+import com.uk.ac.tees.mad.lifehacks.R
 import com.uk.ac.tees.mad.lifehacks.domain.util.BiometricAuthStatus
 import com.uk.ac.tees.mad.lifehacks.domain.util.BiometricAuthenticator
 import com.uk.ac.tees.mad.lifehacks.ui.theme.LifeHacksTheme

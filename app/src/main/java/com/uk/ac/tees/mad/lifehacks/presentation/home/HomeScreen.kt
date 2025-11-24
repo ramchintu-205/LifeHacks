@@ -1,8 +1,12 @@
 package com.uk.ac.tees.mad.lifehacks.presentation.home
 
+import android.Manifest
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,18 +24,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -39,29 +47,43 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
+import com.uk.ac.tees.mad.lifehacks.R
+import com.uk.ac.tees.mad.lifehacks.domain.util.ObserveAsEvents
 import com.uk.ac.tees.mad.lifehacks.ui.theme.LifeHacksTheme
-import com.arjun.lifehacks.R
+import org.koin.androidx.compose.koinViewModel
+import java.io.File
 
 @Composable
 fun HomeRoot(
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    ObserveAsEvents(viewModel.navigationEvent) {
+        // No-op
+    }
 
     HomeScreen(
         state = state,
@@ -75,33 +97,67 @@ fun HomeScreen(
     state: HomeState,
     onAction: (HomeAction) -> Unit,
 ) {
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { success ->
+            if (success) {
+                onAction(HomeAction.OnImageCaptured(imageUri))
+            }
+        }
+    )
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (granted) {
+                imageUri = context.createImageFile().let {
+                    FileProvider.getUriForFile(context, "com.uk.ac.tees.mad.lifehacks.provider", it)
+                }
+                imageUri?.let { cameraLauncher.launch(it) }
+            } else {
+                // Handle permission denial
+            }
+        }
+    )
+
     Scaffold(
         bottomBar = {
             BottomNavigationBar(onAction = onAction)
         }
     ) { paddingValues ->
-        if (state.isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(paddingValues)
-                    .padding(16.dp)
-            ) {
-                Header(userName = state.userName)
-                Spacer(modifier = Modifier.height(24.dp))
-                state.lifeHack?.let { hack ->
-                    LifeHackCard(
-                        lifeHack = hack,
-                        onAction = onAction
-                    )
+        PullToRefreshBox(
+            isRefreshing = state.isLoading,
+            onRefresh = { onAction(HomeAction.NewTipClicked) },
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            if (state.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp)
+                ) {
+                    Header(userName = state.userName)
+                    Spacer(modifier = Modifier.height(24.dp))
+                    state.lifeHack?.let { hack ->
+                        LifeHackCard(
+                            lifeHack = hack,
+                            onAction = onAction,
+                            onTakePhotoClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
+                            imageUri = imageUri,
+                            onClearImage = { imageUri = null }
+                        )
+                    }
                 }
             }
         }
@@ -131,7 +187,13 @@ fun Header(userName: String) {
 }
 
 @Composable
-fun LifeHackCard(lifeHack: LifeHack, onAction: (HomeAction) -> Unit) {
+fun LifeHackCard(
+    lifeHack: LifeHack,
+    onAction: (HomeAction) -> Unit,
+    onTakePhotoClick: () -> Unit,
+    imageUri: Uri?,
+    onClearImage: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -140,16 +202,38 @@ fun LifeHackCard(lifeHack: LifeHack, onAction: (HomeAction) -> Unit) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // In a real app, you'd use an image loading library like Coil or Glide here
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background), // Replace with actual card image
-                contentDescription = "Hack Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(RoundedCornerShape(12.dp))
-            )
+            Box {
+                if (imageUri != null) {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = imageUri),
+                        contentDescription = "Hack Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                    IconButton(
+                        onClick = onClearImage,
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    ) {
+                        Icon(Icons.Default.Clear, contentDescription = "Clear Image", tint = Color.White)
+                    }
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_background), // Replace with actual card image
+                        contentDescription = "Hack Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -203,13 +287,13 @@ fun LifeHackCard(lifeHack: LifeHack, onAction: (HomeAction) -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-            ActionButtons(onAction = onAction)
+            ActionButtons(onAction = onAction, onTakePhotoClick = onTakePhotoClick)
         }
     }
 }
 
 @Composable
-private fun ActionButtons(onAction: (HomeAction) -> Unit) {
+private fun ActionButtons(onAction: (HomeAction) -> Unit, onTakePhotoClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -218,7 +302,7 @@ private fun ActionButtons(onAction: (HomeAction) -> Unit) {
         ) {
             ActionButton(icon = Icons.Default.FavoriteBorder, text = "Favorite", onClick = { onAction(HomeAction.FavoriteClicked) })
             ActionButton(icon = null, text = "New Tip", onClick = { onAction(HomeAction.NewTipClicked) }, isHighlighted = true)
-            ActionButton(icon = Icons.Default.PhotoCamera, text = "Add Photo", onClick = { onAction(HomeAction.AddPhotoClicked) })
+            ActionButton(icon = Icons.Default.PhotoCamera, text = "Add Photo", onClick = onTakePhotoClick)
             Spacer(modifier = Modifier.width(48.dp)) // Spacer for FAB
         }
         FloatingActionButton(
@@ -282,12 +366,25 @@ fun BottomNavigationBar(onAction: (HomeAction) -> Unit) {
             onClick = { onAction(HomeAction.SavedTabClicked) }
         )
         NavigationBarItem(
-            icon = { Icon(Icons.Default.PersonOutline, contentDescription = "Settings") },
+            icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
             label = { Text("Settings") },
             selected = false,
             onClick = { onAction(HomeAction.SettingsTabClicked) }
         )
     }
+}
+
+fun Context.createImageFile(): File {
+    val timeStamp = System.currentTimeMillis()
+    val imageDir = File(cacheDir, "images")
+    if (!imageDir.exists()) {
+        imageDir.mkdir()
+    }
+    return File.createTempFile(
+        "JPEG_${timeStamp}_",
+        ".jpg",
+        imageDir
+    )
 }
 
 @Preview(showBackground = true)
