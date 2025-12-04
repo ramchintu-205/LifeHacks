@@ -22,7 +22,8 @@ fun LifeHackCacheEntity.toLifeHack(): LifeHack {
         category = category,
         description = description,
         imageUrl = imageUrl,
-        source = source
+        source = source,
+        isFavorite = false
     )
 }
 

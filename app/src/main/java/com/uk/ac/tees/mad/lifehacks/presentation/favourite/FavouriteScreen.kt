@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
@@ -28,6 +30,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,22 +50,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import com.uk.ac.tees.mad.lifehacks.presentation.home.BottomNavigationBar
+import com.uk.ac.tees.mad.lifehacks.presentation.navigation.GraphRoutes
 import com.uk.ac.tees.mad.lifehacks.ui.theme.LifeHacksTheme
+import org.koin.androidx.compose.koinViewModel
 
 val seed = Color(0xFF5DB09B)
 
 @Composable
 fun FavouriteRoot(
-    viewModel: FavouriteViewModel = viewModel()
+    viewModel: FavouriteViewModel = koinViewModel(),
+    navController: NavController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     FavouriteScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = viewModel::onAction,
+        navController = navController
     )
 }
 
@@ -70,6 +78,7 @@ fun FavouriteRoot(
 fun FavouriteScreen(
     state: FavouriteState,
     onAction: (FavouriteAction) -> Unit,
+    navController: NavController
 ) {
     Scaffold(
         topBar = {
@@ -89,7 +98,7 @@ fun FavouriteScreen(
             )
         },
         bottomBar = {
-            BottomNavigationBar(onAction = {})
+            FavouriteBottomNavigationBar(navController = navController)
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { paddingValues ->
@@ -218,9 +227,9 @@ fun HackCard(hack: Hack, onAction: (FavouriteAction) -> Unit) {
                             text = hack.title,
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                         )
-                        IconButton(onClick = { onAction(FavouriteAction.OnToggleBookmark(hack)) }) {
+                        IconButton(onClick = { onAction(FavouriteAction.OnToggleFavorite(hack)) }) {
                             Icon(
-                                imageVector = if (hack.isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                                imageVector = if (hack.isFavorite) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
                                 contentDescription = "Bookmark",
                                 tint = seed
                             )
@@ -256,23 +265,58 @@ fun CategoryTag(category: String) {
     }
 }
 
+@Composable
+fun FavouriteBottomNavigationBar(navController: NavController) {
+    NavigationBar {
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Home, contentDescription = "Today") },
+            label = { Text("Today") },
+            selected = false,
+            onClick = { navController.navigate(GraphRoutes.Home) }
+        )
+        NavigationBarItem(
+            icon = { Icon(Icons.Filled.Bookmark, contentDescription = "Saved") },
+            label = { Text("Saved") },
+            selected = true,
+            onClick = { /* Do nothing */ }
+        )
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+            label = { Text("Settings") },
+            selected = false,
+            onClick = { navController.navigate(GraphRoutes.Settings) }
+        )
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
 private fun Preview() {
     val previewHacks = listOf(
-        Hack("Speedy Laundry Hack", "Quickly dry your clothes by placing a dry towel...", "Cleaning", "url", true),
-        Hack("Declutter Your Digital Life", "Organize your desktop and cloud storage...", "Productivity", isBookmarked = true)
+        Hack(
+            title = "Speedy Laundry Hack",
+            description = "Quickly dry your clothes by placing a dry towel...",
+            category = "Cleaning",
+            imageUrl = "url",
+            isFavorite = true,
+            source = ""
+        ),
+        Hack(
+            title = "Declutter Your Digital Life",
+            description = "Organize your desktop and cloud storage...",
+            category = "Productivity",
+            isFavorite = true,
+            imageUrl = null,
+            source = ""
+        )
     )
     LifeHacksTheme {
         FavouriteScreen(
             state = FavouriteState(
-                hacks = previewHacks,
-                searchQuery = "",
-                categories = listOf("All", "Productivity", "Cleaning", "Tech"),
-                selectedCategory = "All"
+                hacks = previewHacks
             ),
-            onAction = {}
+            onAction = {},
+            navController = rememberNavController()
         )
     }
 }

@@ -1,19 +1,25 @@
 package com.uk.ac.tees.mad.lifehacks.presentation.home
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.uk.ac.tees.mad.lifehacks.data.AdviceSlipRepository
 import com.uk.ac.tees.mad.lifehacks.domain.util.Result
-import com.uk.ac.tees.mad.lifehacks.presentation.navigation.GraphRoutes
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+
+sealed class HomeNavEvent {
+    data object NavigateToFavourites : HomeNavEvent()
+}
 
 class HomeViewModel(
     private val adviceSlipRepository: AdviceSlipRepository
@@ -35,7 +41,7 @@ class HomeViewModel(
             initialValue = HomeState(isLoading = true) // Show loading initially
         )
 
-    private val _navigationEvent = MutableSharedFlow<GraphRoutes>()
+    private val _navigationEvent = MutableSharedFlow<HomeNavEvent>()
     val navigationEvent = _navigationEvent.asSharedFlow()
 
     fun onAction(action: HomeAction) {
@@ -45,8 +51,8 @@ class HomeViewModel(
             HomeAction.AddPhotoClicked -> Log.d("HomeViewModel", "Add Photo clicked")
             HomeAction.ShareClicked -> Log.d("HomeViewModel", "Share clicked")
             HomeAction.TodayTabClicked -> {}
-            HomeAction.SavedTabClicked -> viewModelScope.launch { _navigationEvent.emit(GraphRoutes.Favourites) }
-            HomeAction.SettingsTabClicked -> viewModelScope.launch { _navigationEvent.emit(GraphRoutes.Settings) }
+            HomeAction.SavedTabClicked -> viewModelScope.launch { _navigationEvent.emit(HomeNavEvent.NavigateToFavourites) }
+            HomeAction.SettingsTabClicked -> {}
             is HomeAction.OnImageCaptured -> {
                 _state.update { it.copy(lifeHack = it.lifeHack?.copy(imageUrl = action.uri.toString())) }
             }
@@ -57,6 +63,9 @@ class HomeViewModel(
         viewModelScope.launch {
             state.value.lifeHack?.let {
                 adviceSlipRepository.saveAsFavorite(it)
+                _state.update {
+                    it.copy(lifeHack = it.lifeHack?.copy(isFavorite = true))
+                }
             }
         }
     }
@@ -64,8 +73,19 @@ class HomeViewModel(
     private fun loadRandomLifeHack() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
+            val favoritesFlow = adviceSlipRepository.getFavoritesFromCache()
             when (val result = adviceSlipRepository.getRandomLifeHack()) {
-                is Result.Success -> _state.update { it.copy(lifeHack = result.data, isLoading = false) }
+                is Result.Success -> {
+                    favoritesFlow.collect { favorites ->
+                        val isFavorite = favorites.any { it.title == result.data.title }
+                        _state.update {
+                            it.copy(
+                                lifeHack = result.data.copy(isFavorite = isFavorite),
+                                isLoading = false
+                            )
+                        }
+                    }
+                }
                 is Result.Failure -> _state.update { it.copy(error = "Failed to load hack", isLoading = false) }
             }
         }

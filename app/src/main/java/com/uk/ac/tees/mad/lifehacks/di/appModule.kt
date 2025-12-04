@@ -12,6 +12,7 @@ import com.uk.ac.tees.mad.lifehacks.domain.AuthRepository
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.create_account.CreateAccountViewModel
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.forgot.ForgotViewModel
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.login.LoginViewModel
+import com.uk.ac.tees.mad.lifehacks.presentation.favourite.FavouriteViewModel
 import com.uk.ac.tees.mad.lifehacks.presentation.home.HomeViewModel
 import com.uk.ac.tees.mad.lifehacks.presentation.splash.SplashViewModel
 import io.ktor.client.HttpClient
@@ -69,4 +70,5 @@ val appModule = module {
     viewModel { LoginViewModel(get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { SplashViewModel(get(), get(), androidContext()) }
+    viewModel { FavouriteViewModel(get()) }
 }

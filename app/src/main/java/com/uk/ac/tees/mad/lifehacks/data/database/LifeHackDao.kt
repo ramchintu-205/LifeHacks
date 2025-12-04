@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LifeHackDao {
@@ -16,4 +17,7 @@ interface LifeHackDao {
 
     @Query("SELECT * FROM life_hacks ORDER BY RANDOM() LIMIT 1")
     suspend fun getRandomLifeHack(): LifeHackCacheEntity?
+
+    @Query("SELECT * FROM life_hacks ORDER BY timestamp DESC")
+    fun getFavorites(): Flow<List<LifeHackCacheEntity>>
 }

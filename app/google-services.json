@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "1028593538841",
-    "project_id": "lifehacks-6a6c100f",
-    "storage_bucket": "lifehacks-6a6c100f.firebasestorage.app"
+    "project_number": "226702176860",
+    "project_id": "lifehacks-91b0f",
+    "storage_bucket": "lifehacks-91b0f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1028593538841:android:c5fe931d22ee5cf9285788",
+        "mobilesdk_app_id": "1:226702176860:android:e3b2aaddebdabf5d202c99",
         "android_client_info": {
           "package_name": "com.uk.ac.tees.mad.lifehacks"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBcc5gIwLOS7biMr3J4aFnYmgyOTtLF08g"
+          "current_key": "AIzaSyC2keHAWtiuLViuS7hJGuY29bH8rQDx6sg"
         }
       ],
       "services": {

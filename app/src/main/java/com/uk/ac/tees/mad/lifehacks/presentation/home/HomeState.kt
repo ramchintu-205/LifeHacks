@@ -8,7 +8,8 @@ data class HomeState(
         category = "Productivity",
         description = "Start your day by dedicating 15 minutes to mindful planning. Prioritize your top 3 tasks and visualize their successful completion. This simple habit can significantly boost your focus and reduce stress throughout your day, leading to greater accomplishments.",
         imageUrl = null, // Will be replaced by actual image loading
-        source = "AdviceSlip API"
+        source = "AdviceSlip API",
+        isFavorite = false
     ),
     val error: String? = null
 )
@@ -18,5 +19,6 @@ data class LifeHack(
     val category: String,
     val description: String,
     val imageUrl: String?,
-    val source: String
+    val source: String,
+    val isFavorite: Boolean
 )

@@ -27,10 +27,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -49,7 +47,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,21 +65,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.uk.ac.tees.mad.lifehacks.R
 import com.uk.ac.tees.mad.lifehacks.domain.util.ObserveAsEvents
+import com.uk.ac.tees.mad.lifehacks.presentation.navigation.GraphRoutes
 import com.uk.ac.tees.mad.lifehacks.ui.theme.LifeHacksTheme
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 @Composable
 fun HomeRoot(
+    navController: NavController,
     viewModel: HomeViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     ObserveAsEvents(viewModel.navigationEvent) {
-        // No-op
+        when (it) {
+            is HomeNavEvent.NavigateToFavourites -> {
+                navController.navigate(GraphRoutes.Favourites)
+            }
+        }
     }
 
     HomeScreen(
@@ -203,16 +207,21 @@ fun LifeHackCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Box {
+                val painter = if (imageUri != null) {
+                    rememberAsyncImagePainter(model = imageUri)
+                } else {
+                    painterResource(id = R.drawable.ic_launcher_background)
+                }
+                Image(
+                    painter = painter,
+                    contentDescription = "Hack Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                )
                 if (imageUri != null) {
-                    Image(
-                        painter = rememberAsyncImagePainter(model = imageUri),
-                        contentDescription = "Hack Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                    )
                     IconButton(
                         onClick = onClearImage,
                         modifier = Modifier
@@ -222,16 +231,6 @@ fun LifeHackCard(
                     ) {
                         Icon(Icons.Default.Clear, contentDescription = "Clear Image", tint = Color.White)
                     }
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_background), // Replace with actual card image
-                        contentDescription = "Hack Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                    )
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -287,20 +286,31 @@ fun LifeHackCard(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-            ActionButtons(onAction = onAction, onTakePhotoClick = onTakePhotoClick)
+            ActionButtons(
+                lifeHack = lifeHack,
+                onAction = onAction,
+                onTakePhotoClick = onTakePhotoClick
+            )
         }
     }
 }
 
 @Composable
-private fun ActionButtons(onAction: (HomeAction) -> Unit, onTakePhotoClick: () -> Unit) {
+private fun ActionButtons(
+    lifeHack: LifeHack,
+    onAction: (HomeAction) -> Unit,
+    onTakePhotoClick: () -> Unit
+) {
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ActionButton(icon = Icons.Default.FavoriteBorder, text = "Favorite", onClick = { onAction(HomeAction.FavoriteClicked) })
+            ActionButton(
+                icon = if (lifeHack.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                text = "Favorite",
+                onClick = { onAction(HomeAction.FavoriteClicked) })
             ActionButton(icon = null, text = "New Tip", onClick = { onAction(HomeAction.NewTipClicked) }, isHighlighted = true)
             ActionButton(icon = Icons.Default.PhotoCamera, text = "Add Photo", onClick = onTakePhotoClick)
             Spacer(modifier = Modifier.width(48.dp)) // Spacer for FAB

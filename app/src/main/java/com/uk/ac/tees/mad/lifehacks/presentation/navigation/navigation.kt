@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.create_account.CreateAccountRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.forgot.ForgotRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.login.LoginRoot
+import com.uk.ac.tees.mad.lifehacks.presentation.favourite.FavouriteRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.home.HomeRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.splash.SplashRoot
 
@@ -72,8 +73,8 @@ fun Navigation(navcontroller: NavHostController){
 
 
 
-        composable<GraphRoutes.Home> { HomeRoot() }
-        composable<GraphRoutes.Favourites> { Text(text = "Favourites Screen") }
+        composable<GraphRoutes.Home> { HomeRoot(navController = navcontroller) }
+        composable<GraphRoutes.Favourites> { FavouriteRoot(navController = navcontroller) }
         composable<GraphRoutes.Settings> { Text(text = "Settings Screen") }
 
 
