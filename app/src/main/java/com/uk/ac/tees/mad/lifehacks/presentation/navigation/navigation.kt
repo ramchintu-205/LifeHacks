@@ -10,6 +10,7 @@ import com.uk.ac.tees.mad.lifehacks.presentation.auth.forgot.ForgotRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.login.LoginRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.favourite.FavouriteRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.home.HomeRoot
+import com.uk.ac.tees.mad.lifehacks.presentation.profile.ProfileRoot
 import com.uk.ac.tees.mad.lifehacks.presentation.splash.SplashRoot
 
 @Composable
@@ -75,7 +76,7 @@ fun Navigation(navcontroller: NavHostController){
 
         composable<GraphRoutes.Home> { HomeRoot(navController = navcontroller) }
         composable<GraphRoutes.Favourites> { FavouriteRoot(navController = navcontroller) }
-        composable<GraphRoutes.Settings> { Text(text = "Settings Screen") }
+        composable<GraphRoutes.Settings> { ProfileRoot() }
 
 
     }

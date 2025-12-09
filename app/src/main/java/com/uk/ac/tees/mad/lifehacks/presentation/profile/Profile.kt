@@ -1,5 +1,10 @@
 package com.uk.ac.tees.mad.lifehacks.presentation.profile
 
+import android.Manifest
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,26 +48,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.uk.ac.tees.mad.lifehacks.ui.theme.LifeHacksTheme
+import org.koin.androidx.compose.koinViewModel
 
 val seed = Color(0xFF5DB09B)
 
 @Composable
 fun ProfileRoot(
-    viewModel: ProfileViewModel = viewModel()
+    viewModel: ProfileViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     ProfileScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = { action -> viewModel.onAction(action, context) }
     )
 }
 
@@ -111,6 +118,20 @@ fun ProfileScreen(
 
 @Composable
 private fun ProfileHeader(user: User, onAction: (ProfileAction) -> Unit) {
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> onAction(ProfileAction.OnProfilePictureClick(uri)) }
+    )
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                galleryLauncher.launch("image/*")
+            }
+        }
+    )
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -132,7 +153,8 @@ private fun ProfileHeader(user: User, onAction: (ProfileAction) -> Unit) {
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .size(100.dp)
-                    .clip(CircleShape),
+                    .clip(CircleShape)
+                    .clickable { permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE) },
                 contentScale = ContentScale.Crop
             )
             Text(user.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
@@ -233,7 +255,7 @@ private fun Preview() {
     LifeHacksTheme {
         ProfileScreen(
             state = ProfileState(
-                user = User("Chintan", "chintan@lifehacks.com", ""),
+                user = User(id = "", name = "Chintan", email = "chintan@lifehacks.com", profilePictureUrl = ""),
                 notificationTime = "09:00 AM",
                 preferredCategories = "3 Selected",
                 appTheme = "System",

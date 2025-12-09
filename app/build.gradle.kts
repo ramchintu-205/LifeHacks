@@ -10,9 +10,7 @@ plugins {
 
 android {
     namespace = "com.uk.ac.tees.mad.lifehacks"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.uk.ac.tees.mad.lifehacks"
@@ -66,6 +64,7 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.database)
 
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -112,5 +111,9 @@ dependencies {
     //navigation
 
     implementation(libs.androidx.navigation.compose)
+
+    // Supabase
+    implementation(libs.storage.kt)
+
 
 }

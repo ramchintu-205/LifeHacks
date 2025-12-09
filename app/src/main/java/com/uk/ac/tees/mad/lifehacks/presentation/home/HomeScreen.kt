@@ -86,6 +86,9 @@ fun HomeRoot(
             is HomeNavEvent.NavigateToFavourites -> {
                 navController.navigate(GraphRoutes.Favourites)
             }
+            is HomeNavEvent.NavigateToSettings -> {
+                navController.navigate(GraphRoutes.Settings)
+            }
         }
     }
 

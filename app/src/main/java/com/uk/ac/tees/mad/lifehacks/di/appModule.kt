@@ -7,6 +7,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.uk.ac.tees.mad.lifehacks.data.AdviceSlipRepository
 import com.uk.ac.tees.mad.lifehacks.data.AdviceSlipRepositoryImpl
 import com.uk.ac.tees.mad.lifehacks.data.AuthRepositoryImpl
+import com.uk.ac.tees.mad.lifehacks.data.UserRepository
+import com.uk.ac.tees.mad.lifehacks.data.UserRepositoryImpl
 import com.uk.ac.tees.mad.lifehacks.data.database.LifeHacksDatabase
 import com.uk.ac.tees.mad.lifehacks.domain.AuthRepository
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.create_account.CreateAccountViewModel
@@ -14,7 +16,12 @@ import com.uk.ac.tees.mad.lifehacks.presentation.auth.forgot.ForgotViewModel
 import com.uk.ac.tees.mad.lifehacks.presentation.auth.login.LoginViewModel
 import com.uk.ac.tees.mad.lifehacks.presentation.favourite.FavouriteViewModel
 import com.uk.ac.tees.mad.lifehacks.presentation.home.HomeViewModel
+import com.uk.ac.tees.mad.lifehacks.presentation.profile.ProfileViewModel
 import com.uk.ac.tees.mad.lifehacks.presentation.splash.SplashViewModel
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.storage.Storage
+import io.github.jan.supabase.storage.storage
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
@@ -30,6 +37,17 @@ val appModule = module {
     // Firebase
     single { FirebaseAuth.getInstance() }
     single { FirebaseFirestore.getInstance() }
+
+    // Supabase
+    single {
+        createSupabaseClient(
+            supabaseUrl = "https://kvdagjrceetbstkqanlf.supabase.co",
+            supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2ZGFnanJjZWV0YnN0a3FhbmxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1NTgwODQsImV4cCI6MjA3NjEzNDA4NH0.7S3oqGekCWggEMtaCne9JknjhqlGdpcxFZvUEurmRGI"
+        ) {
+            install(Storage)
+        }
+    }
+    single { get<SupabaseClient>().storage }
 
     // Ktor HttpClient
     single {
@@ -53,15 +71,17 @@ val appModule = module {
             androidApplication(),
             LifeHacksDatabase::class.java,
             "lifehacks.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 
     // DAO
     single { get<LifeHacksDatabase>().lifeHackDao() }
+    single { get<LifeHacksDatabase>().userDao() }
 
     // Repositories
     single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
     single<AdviceSlipRepository> { AdviceSlipRepositoryImpl(get(), get(), get(), get()) }
+    single<UserRepository> { UserRepositoryImpl(get(), get(), get(), get(), androidContext()) }
 
 
     // ViewModels
@@ -71,4 +91,5 @@ val appModule = module {
     viewModel { HomeViewModel(get()) }
     viewModel { SplashViewModel(get(), get(), androidContext()) }
     viewModel { FavouriteViewModel(get()) }
+    viewModel { ProfileViewModel(get()) }
 }

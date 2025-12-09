@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 
 sealed class HomeNavEvent {
     data object NavigateToFavourites : HomeNavEvent()
+    data object NavigateToSettings : HomeNavEvent()
 }
 
 class HomeViewModel(
@@ -52,7 +53,7 @@ class HomeViewModel(
             HomeAction.ShareClicked -> Log.d("HomeViewModel", "Share clicked")
             HomeAction.TodayTabClicked -> {}
             HomeAction.SavedTabClicked -> viewModelScope.launch { _navigationEvent.emit(HomeNavEvent.NavigateToFavourites) }
-            HomeAction.SettingsTabClicked -> {}
+            HomeAction.SettingsTabClicked -> viewModelScope.launch { _navigationEvent.emit(HomeNavEvent.NavigateToSettings) }
             is HomeAction.OnImageCaptured -> {
                 _state.update { it.copy(lifeHack = it.lifeHack?.copy(imageUrl = action.uri.toString())) }
             }
