@@ -1,7 +1,5 @@
 package com.uk.ac.tees.mad.lifehacks.presentation.profile
 
-import android.Manifest
-import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -123,15 +121,6 @@ private fun ProfileHeader(user: User, onAction: (ProfileAction) -> Unit) {
         onResult = { uri -> onAction(ProfileAction.OnProfilePictureClick(uri)) }
     )
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted ->
-            if (isGranted) {
-                galleryLauncher.launch("image/*")
-            }
-        }
-    )
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -154,7 +143,7 @@ private fun ProfileHeader(user: User, onAction: (ProfileAction) -> Unit) {
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
-                    .clickable { permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE) },
+                    .clickable { galleryLauncher.launch("image/*") },
                 contentScale = ContentScale.Crop
             )
             Text(user.name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)

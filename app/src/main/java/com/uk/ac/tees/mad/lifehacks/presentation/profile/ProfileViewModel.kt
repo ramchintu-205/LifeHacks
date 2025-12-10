@@ -40,6 +40,7 @@ class ProfileViewModel(private val userRepository: UserRepository) : ViewModel()
         when (action) {
             is ProfileAction.OnProfilePictureClick -> {
                 action.uri?.let { uri ->
+                    _state.update { it.copy(user = it.user?.copy(profilePictureUrl = uri.toString())) }
                     viewModelScope.launch {
                         val result = userRepository.uploadProfilePicture(uri)
                         if (result is Result.Success) {

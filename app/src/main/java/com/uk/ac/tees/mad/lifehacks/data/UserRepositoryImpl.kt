@@ -2,6 +2,7 @@ package com.uk.ac.tees.mad.lifehacks.data
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.uk.ac.tees.mad.lifehacks.data.database.UserDao
@@ -35,12 +36,13 @@ class UserRepositoryImpl(
             val fileName = "${userId}-${UUID.randomUUID()}"
             val fileBytes = context.contentResolver.openInputStream(uri)?.readBytes()
             fileBytes?.let {
-                val bucket = storage["profile-pictures"]
+                val bucket = storage["satyam"]
                 bucket.upload(path = fileName, data = it, options = { upsert = true })
                 val publicUrl = bucket.publicUrl(path = fileName)
                 Result.Success(publicUrl)
             } ?: Result.Failure(DataError.Remote.UNKNOWN)
         } catch (e: Exception) {
+            Log.e("UserRepositoryImpl", "Error uploading profile picture", e)
             Result.Failure(DataError.Remote.UNKNOWN)
         }
     }
