@@ -52,10 +52,21 @@ class HomeViewModel(
             HomeAction.AddPhotoClicked -> Log.d("HomeViewModel", "Add Photo clicked")
             HomeAction.ShareClicked -> Log.d("HomeViewModel", "Share clicked")
             HomeAction.TodayTabClicked -> {}
-            HomeAction.SavedTabClicked -> viewModelScope.launch { _navigationEvent.emit(HomeNavEvent.NavigateToFavourites) }
-            HomeAction.SettingsTabClicked -> viewModelScope.launch { _navigationEvent.emit(HomeNavEvent.NavigateToSettings) }
+            HomeAction.SavedTabClicked -> viewModelScope.launch {
+                _navigationEvent.emit(HomeNavEvent.NavigateToFavourites)
+            }
+            HomeAction.SettingsTabClicked -> viewModelScope.launch {
+                _navigationEvent.emit(HomeNavEvent.NavigateToSettings)
+            }
             is HomeAction.OnImageCaptured -> {
-                _state.update { it.copy(lifeHack = it.lifeHack?.copy(imageUrl = action.uri.toString())) }
+                _state.update {
+                    it.copy(lifeHack = it.lifeHack?.copy(imageUrl = action.uri.toString()))
+                }
+            }
+            HomeAction.OnImageCleared -> {  // Add this
+                _state.update {
+                    it.copy(lifeHack = it.lifeHack?.copy(imageUrl = null))
+                }
             }
         }
     }

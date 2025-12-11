@@ -11,10 +11,12 @@ import com.uk.ac.tees.mad.lifehacks.domain.util.Result
 import com.uk.ac.tees.mad.lifehacks.domain.util.DataError
 import com.uk.ac.tees.mad.lifehacks.presentation.profile.User
 import io.github.jan.supabase.storage.Storage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class UserRepositoryImpl(
@@ -30,9 +32,9 @@ class UserRepositoryImpl(
         return userDao.getUser(uid).map { it?.toUser() }
     }
 
-    override suspend fun uploadProfilePicture(uri: Uri): Result<String, DataError.Remote> {
-        return try {
-            val userId = firebaseAuth.currentUser?.uid ?: return Result.Failure(DataError.Remote.UNAUTHORIZED)
+    override suspend fun uploadProfilePicture(uri: Uri): Result<String, DataError.Remote> = withContext(Dispatchers.IO) {
+        try {
+            val userId = firebaseAuth.currentUser?.uid ?: return@withContext Result.Failure(DataError.Remote.UNAUTHORIZED)
             val fileName = "${userId}-${UUID.randomUUID()}"
             val fileBytes = context.contentResolver.openInputStream(uri)?.readBytes()
             fileBytes?.let {

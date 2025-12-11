@@ -10,4 +10,7 @@ sealed interface ProfileAction {
     data class OnBiometricUnlockToggled(val isEnabled: Boolean) : ProfileAction
     object OnLogout : ProfileAction
     data class OnProfilePictureClick(val uri: Uri?) : ProfileAction
+    data class OnNotificationToggled(val isEnabled: Boolean) : ProfileAction
+    object OnNotificationClick : ProfileAction
+    data class OnNotificationTimeChange(val hour: Int, val minute: Int) : ProfileAction
 }

@@ -7,5 +7,6 @@ data class ProfileState(
     val preferredCategories: String = "",
     val appTheme: String = "",
     val isBiometricUnlockEnabled: Boolean = false,
-    val appVersion: String = ""
+    val appVersion: String = "",
+    val areNotificationsEnabled: Boolean = false
 )

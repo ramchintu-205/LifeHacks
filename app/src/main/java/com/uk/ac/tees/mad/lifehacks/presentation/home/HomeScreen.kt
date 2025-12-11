@@ -2,6 +2,7 @@ package com.uk.ac.tees.mad.lifehacks.presentation.home
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,9 +50,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -104,14 +103,17 @@ fun HomeScreen(
     state: HomeState,
     onAction: (HomeAction) -> Unit,
 ) {
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
             if (success) {
-                onAction(HomeAction.OnImageCaptured(imageUri))
+                // The image URI is already stored in the temp file
+                // We need to pass it to the ViewModel
+                context.getLatestImageUri()?.let { uri ->
+                    onAction(HomeAction.OnImageCaptured(uri))
+                }
             }
         }
     )
@@ -120,12 +122,13 @@ fun HomeScreen(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
             if (granted) {
-                imageUri = context.createImageFile().let {
-                    FileProvider.getUriForFile(context, "com.uk.ac.tees.mad.lifehacks.provider", it)
-                }
-                imageUri?.let { cameraLauncher.launch(it) }
-            } else {
-                // Handle permission denial
+                val imageFile = context.createImageFile()
+                val uri = FileProvider.getUriForFile(
+                    context,
+                    "com.uk.ac.tees.mad.lifehacks.provider",
+                    imageFile
+                )
+                cameraLauncher.launch(uri)
             }
         }
     )
@@ -160,9 +163,19 @@ fun HomeScreen(
                         LifeHackCard(
                             lifeHack = hack,
                             onAction = onAction,
-                            onTakePhotoClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
-                            imageUri = imageUri,
-                            onClearImage = { imageUri = null }
+                            onTakePhotoClick = {
+                                permissionLauncher.launch(Manifest.permission.CAMERA)
+                            },
+                            onShareClicked = {
+                                val sendIntent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_TEXT, state.lifeHack.title)
+                                    type = "text/plain"
+                                }
+
+                                val shareIntent = Intent.createChooser(sendIntent, null)
+                                context.startActivity(shareIntent)
+                            }
                         )
                     }
                 }
@@ -184,7 +197,7 @@ fun Header(userName: String) {
             fontWeight = FontWeight.Bold
         )
         Image(
-            painter = painterResource(id = R.drawable.ic_launcher_background), // Replace with actual profile image
+            painter = painterResource(id = R.drawable.ic_launcher_background),
             contentDescription = "Profile Picture",
             modifier = Modifier
                 .size(40.dp)
@@ -198,8 +211,7 @@ fun LifeHackCard(
     lifeHack: LifeHack,
     onAction: (HomeAction) -> Unit,
     onTakePhotoClick: () -> Unit,
-    imageUri: Uri?,
-    onClearImage: () -> Unit
+    onShareClicked: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -210,11 +222,13 @@ fun LifeHackCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Box {
-                val painter = if (imageUri != null) {
-                    rememberAsyncImagePainter(model = imageUri)
+                // Use the imageUrl from the LifeHack state
+                val painter = if (lifeHack.imageUrl != null) {
+                    rememberAsyncImagePainter(model = Uri.parse(lifeHack.imageUrl))
                 } else {
                     painterResource(id = R.drawable.ic_launcher_background)
                 }
+
                 Image(
                     painter = painter,
                     contentDescription = "Hack Image",
@@ -224,18 +238,25 @@ fun LifeHackCard(
                         .height(200.dp)
                         .clip(RoundedCornerShape(12.dp))
                 )
-                if (imageUri != null) {
+
+                // Show clear button only if there's a custom image
+                if (lifeHack.imageUrl != null) {
                     IconButton(
-                        onClick = onClearImage,
+                        onClick = { onAction(HomeAction.OnImageCleared) },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
                             .background(Color.Black.copy(alpha = 0.5f), CircleShape)
                     ) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear Image", tint = Color.White)
+                        Icon(
+                            Icons.Default.Clear,
+                            contentDescription = "Clear Image",
+                            tint = Color.White
+                        )
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -292,7 +313,8 @@ fun LifeHackCard(
             ActionButtons(
                 lifeHack = lifeHack,
                 onAction = onAction,
-                onTakePhotoClick = onTakePhotoClick
+                onTakePhotoClick = onTakePhotoClick,
+                onShareClicked = onShareClicked
             )
         }
     }
@@ -302,7 +324,8 @@ fun LifeHackCard(
 private fun ActionButtons(
     lifeHack: LifeHack,
     onAction: (HomeAction) -> Unit,
-    onTakePhotoClick: () -> Unit
+    onTakePhotoClick: () -> Unit,
+    onShareClicked : () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -313,17 +336,29 @@ private fun ActionButtons(
             ActionButton(
                 icon = if (lifeHack.isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                 text = "Favorite",
-                onClick = { onAction(HomeAction.FavoriteClicked) })
-            ActionButton(icon = null, text = "New Tip", onClick = { onAction(HomeAction.NewTipClicked) }, isHighlighted = true)
-            ActionButton(icon = Icons.Default.PhotoCamera, text = "Add Photo", onClick = onTakePhotoClick)
-            Spacer(modifier = Modifier.width(48.dp)) // Spacer for FAB
+                onClick = { onAction(HomeAction.FavoriteClicked) }
+            )
+            ActionButton(
+                icon = null,
+                text = "New Tip",
+                onClick = { onAction(HomeAction.NewTipClicked) },
+                isHighlighted = true
+            )
+            ActionButton(
+                icon = Icons.Default.PhotoCamera,
+                text = "Add Photo",
+                onClick = onTakePhotoClick
+            )
+            Spacer(modifier = Modifier.width(48.dp))
         }
         FloatingActionButton(
-            onClick = { onAction(HomeAction.ShareClicked) },
+            onClick = {
+                onShareClicked()
+            },
             modifier = Modifier.align(Alignment.CenterEnd),
-            containerColor = Color(0xFFFFC107) // Amber color
+            containerColor = Color(0xFFFFC107)
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Share")
+            Icon(Icons.Default.Share, contentDescription = "Share")
         }
     }
 }
@@ -335,7 +370,11 @@ fun ActionButton(
     onClick: () -> Unit,
     isHighlighted: Boolean = false
 ) {
-    val backgroundColor = if (isHighlighted) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f) else Color.Transparent
+    val backgroundColor = if (isHighlighted)
+        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+    else
+        Color.Transparent
+
     TextButton(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
@@ -354,11 +393,18 @@ fun ActionButton(
                 Box(
                     modifier = Modifier
                         .size(8.dp)
-                        .background(color = Color.Gray.copy(alpha = 0.5f), shape = CircleShape)
+                        .background(
+                            color = Color.Gray.copy(alpha = 0.5f),
+                            shape = CircleShape
+                        )
                 )
-                Spacer(modifier = Modifier.height(10.dp)) // Adjust spacing to align text
+                Spacer(modifier = Modifier.height(10.dp))
             }
-            Text(text = text, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                text = text,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
@@ -398,6 +444,19 @@ fun Context.createImageFile(): File {
         ".jpg",
         imageDir
     )
+}
+
+fun Context.getLatestImageUri(): Uri? {
+    val imageDir = File(cacheDir, "images")
+    val files = imageDir.listFiles()
+    val latestFile = files?.maxByOrNull { it.lastModified() }
+    return latestFile?.let {
+        FileProvider.getUriForFile(
+            this,
+            "com.uk.ac.tees.mad.lifehacks.provider",
+            it
+        )
+    }
 }
 
 @Preview(showBackground = true)

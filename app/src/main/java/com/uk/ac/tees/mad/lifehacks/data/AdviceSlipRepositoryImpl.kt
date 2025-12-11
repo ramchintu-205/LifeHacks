@@ -1,5 +1,6 @@
 package com.uk.ac.tees.mad.lifehacks.data
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.snapshots
@@ -29,6 +30,7 @@ class AdviceSlipRepositoryImpl(
 
     override suspend fun getRandomLifeHack(): Result<LifeHack, DataError.Remote> {
         val result = client.get<AdviceSlipResponse>("https://api.adviceslip.com/advice")
+        Log.d("PI",  result.toString())
 
         return when (result) {
             is Result.Success -> {

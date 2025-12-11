@@ -23,6 +23,7 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.storage.storage
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.serialization.kotlinx.json.json
@@ -41,17 +42,24 @@ val appModule = module {
     // Supabase
     single {
         createSupabaseClient(
-            supabaseUrl = "https://kvdagjrceetbstkqanlf.supabase.co",
-            supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2ZGFnanJjZWV0YnN0a3FhbmxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA1NTgwODQsImV4cCI6MjA3NjEzNDA4NH0.7S3oqGekCWggEMtaCne9JknjhqlGdpcxFZvUEurmRGI"
+            supabaseUrl = "https://sersdqnxqnqrgpfsduiq.supabase.co",
+            supabaseKey = "sb_publishable_T5sz-oCDXC_VQLFXOOOYzg_QBmxbVyE"
         ) {
             install(Storage)
         }
     }
+
     single { get<SupabaseClient>().storage }
 
     // Ktor HttpClient
     single {
         HttpClient {
+            install(HttpTimeout){
+                requestTimeoutMillis = 30000  // 30 seconds
+                connectTimeoutMillis = 30000  // 30 seconds
+                socketTimeoutMillis = 30000   // 30 seconds
+            }
+
             install(ContentNegotiation) {
                 json(
                     json = Json {
@@ -59,7 +67,8 @@ val appModule = module {
                         isLenient = true
                         prettyPrint = true
                     },
-                    contentType = ContentType.Any
+                    contentType = ContentType.Any,
+
                 )
             }
         }
@@ -91,5 +100,5 @@ val appModule = module {
     viewModel { HomeViewModel(get()) }
     viewModel { SplashViewModel(get(), get(), androidContext()) }
     viewModel { FavouriteViewModel(get()) }
-    viewModel { ProfileViewModel(get()) }
+    viewModel { ProfileViewModel(get(), get()) }
 }

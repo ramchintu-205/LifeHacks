@@ -11,4 +11,6 @@ sealed interface HomeAction {
     data object SavedTabClicked : HomeAction
     data object SettingsTabClicked : HomeAction
     data class OnImageCaptured(val uri: Uri?) : HomeAction
+    data object OnImageCleared : HomeAction  // Add this line
+
 }
